@@ -17,13 +17,13 @@ export default function Impact() {
   useGSAP(
     () => {
       gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(".impact-card", {
+        gsap.from(".impact-item", {
           opacity: 0,
           y: 50,
           duration: 0.9,
           ease: "power3.out",
           stagger: 0.12,
-          scrollTrigger: { trigger: ".impact-grid", start: "top 80%", once: true },
+          scrollTrigger: { trigger: ".impact-grid", start: "top 82%", once: true },
         });
       });
     },
@@ -31,46 +31,48 @@ export default function Impact() {
   );
 
   return (
-    <section id="impact" ref={root} className="relative z-10 overflow-hidden bg-ink-2 py-28 md:py-40">
-      <div className="pointer-events-none absolute -left-40 bottom-0 h-[36rem] w-[36rem] rounded-full bg-gold/10 blur-[140px]" />
+    <section id="impact" ref={root} className="grain relative z-10 overflow-hidden bg-shu py-24 text-sumi md:py-36">
       <div className="relative mx-auto max-w-7xl px-5 md:px-8">
-        <p className="eyebrow mb-5">{t("eyebrow")}</p>
-        <SplitHeading className="max-w-3xl font-serif text-[clamp(1.9rem,4.6vw,3.6rem)] font-bold">
+        <p className="eyebrow mb-6 flex items-center gap-3">
+          <span className="font-display text-3xl font-extrabold text-paper">04</span>
+          {t("eyebrow")}
+        </p>
+        <SplitHeading className="max-w-3xl font-display text-[clamp(2rem,4.8vw,4.2rem)] font-extrabold leading-[1.15]">
           {t("title")}
         </SplitHeading>
-        <p className="mt-6 max-w-2xl text-base leading-8 text-paper-dim md:text-lg">{t("lead")}</p>
+        <p className="mt-7 max-w-2xl text-base font-medium leading-8 md:text-lg">{t("lead")}</p>
 
-        <div className="impact-grid mt-16 grid gap-5 md:grid-cols-3">
+        <div className="impact-grid mt-14 grid gap-x-10 gap-y-12 md:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.label} className="impact-card glass rounded-3xl p-8">
-              <span className="rounded-full bg-jade/15 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-widest text-jade">
+            <div key={s.label} className="impact-item border-t-4 border-sumi pt-4">
+              <span className="inline-block bg-sumi px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest text-paper">
                 {t("achievedLabel")}
               </span>
-              <p className="mt-6 font-display text-6xl font-bold md:text-7xl">
+              <p className="mt-4 font-display text-[clamp(4.2rem,9vw,7.5rem)] font-extrabold leading-none text-paper">
                 <Counter value={s.value} prefix={s.prefix} suffix={s.suffix} />
               </p>
-              <p className="mt-3 text-base font-bold">{s.label}</p>
-              {s.note && <p className="mt-1 text-sm text-paper-dim">{s.note}</p>}
-              <p className="mt-6 border-t border-white/10 pt-3 text-xs text-paper-dim/70">{s.source}</p>
+              <p className="mt-3 text-lg font-bold">{s.label}</p>
+              {s.note && <p className="text-sm font-medium">{s.note}</p>}
+              <p className="mt-4 text-xs font-medium opacity-80">{s.source}</p>
             </div>
           ))}
         </div>
 
-        <div className="impact-grid mt-5 grid gap-5 md:grid-cols-2">
+        <div className="impact-grid mt-16 grid gap-6 md:grid-cols-2">
           {targets.map((s) => (
-            <div key={s.label} className="impact-card relative rounded-3xl border border-dashed border-gold/40 p-8">
-              <span className="rounded-full bg-gold/15 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-widest text-gold">
+            <div key={s.label} className="impact-item bg-sumi p-8 text-paper print-shadow-paper">
+              <span className="inline-block bg-sun px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest text-sumi">
                 {t("targetLabel")}
               </span>
-              <p className="mt-6 font-display text-5xl font-bold text-gold md:text-6xl">
+              <p className="mt-4 font-display text-[clamp(3rem,6vw,5rem)] font-extrabold leading-none text-sun">
                 <Counter value={s.value} prefix={s.prefix} suffix={s.suffix} />
               </p>
               <p className="mt-3 text-base font-bold">{s.label}</p>
-              <p className="mt-6 border-t border-white/10 pt-3 text-xs text-paper-dim/70">{s.source}</p>
+              <p className="mt-3 text-xs text-paper/70">{s.source}</p>
             </div>
           ))}
         </div>
-        <p className="mt-8 max-w-3xl text-xs leading-6 text-paper-dim/70">{t("disclaimer")}</p>
+        <p className="mt-8 max-w-3xl text-xs font-medium leading-6">{t("disclaimer")}</p>
       </div>
     </section>
   );

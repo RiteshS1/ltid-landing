@@ -1,14 +1,17 @@
-/** Mutable scene state shared between GSAP ScrollTriggers (DOM) and the R3F scene. */
+/** Mutable scene state shared between GSAP ScrollTriggers / DOM and the R3F scene. */
 export const globeState = {
-  /** target longitude/latitude (deg) the globe should face */
+  /** 0 = farm island (hero), 1 = globe (roadmap) */
+  mode: 0,
+  /** globe target orientation */
   lon: 125,
   lat: 14,
   zoom: 1,
-  /** horizontal offset in world units on desktop (globe sits right of the headline) */
-  offsetX: 0.95,
-  /** reveal 0..1 for each arc: [Tokyo→Benguet, Benguet→Jakarta, Benguet→Delhi, Benguet→Maputo] */
+  /** arc reveal 0..1: [Tokyo→Benguet, Benguet→Jakarta, Benguet→Delhi, Benguet→Maputo] */
   reveal: [0, 0, 0, 0] as number[],
-  /** whether the canvas is on screen (loop is paused otherwise) */
+  /** scroll progress through the hero, 0..1 (drives island yaw / lift) */
+  heroScroll: 0,
+  /** normalised pointer, -1..1 */
+  pointer: { x: 0, y: 0 },
   active: true,
   invalidate: null as null | (() => void),
 };

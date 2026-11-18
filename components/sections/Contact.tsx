@@ -29,64 +29,67 @@ export default function Contact() {
   }
 
   const field =
-    "w-full rounded-xl border border-white/10 bg-ink/60 px-4 py-3 text-sm text-paper placeholder:text-paper-dim/50 focus:border-jade focus:outline-none";
+    "w-full border-0 border-b-2 border-paper/40 bg-transparent px-0 py-3 text-base text-paper placeholder:text-paper/30 focus:border-sun focus:outline-none";
 
   return (
-    <section id="contact" className="relative z-10 overflow-hidden bg-ink py-28 md:py-40">
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[30rem] w-[60rem] -translate-x-1/2 rounded-full bg-teal/20 blur-[160px]" />
+    <section id="contact" className="relative z-10 overflow-hidden bg-sumi py-24 text-paper md:py-36">
       <div className="relative mx-auto max-w-7xl px-5 md:px-8">
-        <p className="eyebrow mb-5">{t("eyebrow")}</p>
-        <SplitHeading className="max-w-3xl font-serif text-[clamp(1.9rem,4.6vw,3.6rem)] font-bold">
+        <p className="eyebrow mb-6 flex items-center gap-3 text-sun">
+          <span className="font-display text-3xl font-extrabold">08</span>
+          {t("eyebrow")}
+        </p>
+        <SplitHeading className="max-w-3xl font-display text-[clamp(2rem,4.8vw,4.2rem)] font-extrabold leading-[1.15]">
           {t("title")}
         </SplitHeading>
 
-        <div className="mt-14 grid gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="mt-14 grid gap-14 lg:grid-cols-2 lg:gap-24">
           <div>
-            <p className="eyebrow !text-gold">{t("visionLabel")}</p>
-            <blockquote className="mt-4 border-l-2 border-jade pl-6 font-serif text-lg leading-9 text-paper md:text-xl">
+            <p className="eyebrow text-sun">{t("visionLabel")}</p>
+            <blockquote className="relative mt-12 font-serif text-xl leading-10 md:text-2xl md:leading-[2.6rem]">
+              <span aria-hidden="true" className="absolute -left-1 -top-8 font-display text-7xl leading-none text-shu">“</span>
               {t("vision")}
             </blockquote>
             <dl className="mt-10 space-y-5 text-sm">
               <div className="flex gap-4">
-                <dt className="mt-0.5 text-jade"><MapPin className="h-5 w-5" /><span className="sr-only">{t("addressLabel")}</span></dt>
-                <dd className="text-paper-dim">{t("address")}</dd>
+                <dt className="mt-0.5 text-sun"><MapPin className="h-5 w-5" /><span className="sr-only">{t("addressLabel")}</span></dt>
+                <dd className="text-paper/80">{t("address")}</dd>
               </div>
               <div className="flex gap-4">
-                <dt className="mt-0.5 text-jade"><Mail className="h-5 w-5" /><span className="sr-only">{t("emailLabel")}</span></dt>
-                <dd><a className="text-paper underline decoration-jade/50 underline-offset-4" href={`mailto:${t("email")}`}>{t("email")}</a></dd>
+                <dt className="mt-0.5 text-sun"><Mail className="h-5 w-5" /><span className="sr-only">{t("emailLabel")}</span></dt>
+                <dd><a className="underline decoration-sun underline-offset-4" href={`mailto:${t("email")}`}>{t("email")}</a></dd>
               </div>
               <div className="flex gap-4">
-                <dt className="mt-0.5 text-jade"><Globe className="h-5 w-5" /><span className="sr-only">Web</span></dt>
-                <dd><a className="text-paper underline decoration-jade/50 underline-offset-4" href="https://www.ltid.jp" target="_blank" rel="noopener noreferrer">{t("web")}</a></dd>
+                <dt className="mt-0.5 text-sun"><Globe className="h-5 w-5" /><span className="sr-only">Web</span></dt>
+                <dd><a className="underline decoration-sun underline-offset-4" href="https://www.ltid.jp" target="_blank" rel="noopener noreferrer">{t("web")}</a></dd>
               </div>
             </dl>
           </div>
 
-          <form onSubmit={onSubmit} noValidate className="glass space-y-5 rounded-3xl p-8 md:p-10">
+          <form onSubmit={onSubmit} noValidate className="space-y-7">
             {([
               ["name", "text"],
               ["email", "email"],
               ["subject", "text"],
             ] as const).map(([k, type]) => (
               <div key={k}>
-                <label htmlFor={k} className="mb-2 block text-xs text-paper-dim">{t(`form.${k}`)}</label>
+                <label htmlFor={k} className="block text-xs font-bold uppercase tracking-widest text-paper/70">{t(`form.${k}`)}</label>
                 <input id={k} name={k} type={type} className={field} aria-invalid={!!errors[k as keyof Errors]} autoComplete={k === "email" ? "email" : k === "name" ? "name" : "off"} />
-                {errors[k as keyof Errors] && <p className="mt-1 text-xs text-alert" role="alert">{errors[k as keyof Errors]}</p>}
+                {errors[k as keyof Errors] && <p className="mt-1 text-xs text-shu" role="alert">{errors[k as keyof Errors]}</p>}
               </div>
             ))}
             <div>
-              <label htmlFor="message" className="mb-2 block text-xs text-paper-dim">{t("form.message")}</label>
-              <textarea id="message" name="message" rows={5} className={field} aria-invalid={!!errors.message} />
-              {errors.message && <p className="mt-1 text-xs text-alert" role="alert">{errors.message}</p>}
+              <label htmlFor="message" className="block text-xs font-bold uppercase tracking-widest text-paper/70">{t("form.message")}</label>
+              <textarea id="message" name="message" rows={4} className={field} aria-invalid={!!errors.message} />
+              {errors.message && <p className="mt-1 text-xs text-shu" role="alert">{errors.message}</p>}
             </div>
             <button
               type="submit"
               disabled={state === "sending"}
-              className="w-full rounded-full bg-jade px-6 py-3.5 text-sm font-semibold text-ink transition-transform hover:scale-[1.02] disabled:opacity-60"
+              className="rounded-full bg-sun px-9 py-4 text-sm font-extrabold text-sumi transition-colors hover:bg-shu hover:text-paper disabled:opacity-60"
             >
               {state === "sending" ? t("form.sending") : t("form.submit")}
             </button>
-            {state === "done" && <p className="text-sm text-jade" role="status">{t("form.success")}</p>}
+            {state === "done" && <p className="text-sm text-sun" role="status">{t("form.success")}</p>}
           </form>
         </div>
       </div>

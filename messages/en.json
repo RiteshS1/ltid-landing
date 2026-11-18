@@ -27,59 +27,68 @@
       "Live in the Philippines",
       "Patents pending"
     ],
-    "mapLabel": "Tokyo → Benguet → Asia → Africa"
+    "mapLabel": "Tokyo → Benguet → Asia → Africa",
+    "hint": "Move your cursor",
+    "marquee": "FINANCE × DISTRIBUTION × AI  ·  DIGITAL COOPERATIVE  ·  TOKYO → BENGUET → ASIA → AFRICA  ·  "
   },
   "Problem": {
-    "eyebrow": "01 — The problem",
-    "title": "Along the way from field to table, the value disappears.",
-    "lead": "Farming nations, yet farmers are stuck on both capital and market access. When a retailer pays 100, only 20–30 reaches the farmer.",
-    "chainRetailer": "Paid by the retailer",
-    "chainFarmer": "Reaches the farmer",
-    "chainMiddle": "10+ intermediaries",
-    "perHundred": "per 100",
-    "aprLabel": "Annual interest when borrowing from local lenders",
-    "aprNote": "There are no banks in rural areas, and collateral reviews take months to a year. Farmers have no choice but to borrow at punishing rates.",
-    "points": [
+    "eyebrow": "The problem",
+    "title": "When a retailer pays 100, the farmer receives 20–30.",
+    "lead": "Farming nations, yet farmers are stuck on both capital and market access. Most of the value they grow never reaches them.",
+    "legendFarmer": "Reaches the farmer (20–30)",
+    "legendMiddle": "Shared among intermediaries (70–80)",
+    "waffleCaption": "The retail price, drawn as 100 squares",
+    "rows": [
       {
-        "title": "No access to capital",
-        "body": "One growing season needs roughly ¥200–300k. With an average farm income near ¥200k, buying seed and fertiliser is out of reach."
+        "stat": "200–300%",
+        "statLabel": "Annual interest from local lenders",
+        "title": "No access to credit",
+        "body": "There are no banks in rural areas, and collateral reviews take months to a year. To buy seed and fertiliser, farmers borrow at punishing rates."
       },
       {
+        "stat": "10+",
+        "statLabel": "Intermediaries before the retailer",
         "title": "No price visibility",
         "body": "Routes to market and trading prices stay with the intermediaries. Farmers cannot know what their harvest is truly worth."
       },
       {
-        "title": "No way to move produce",
-        "body": "Buying or renting a truck is expensive, and damage in transit wastes part of every harvest."
+        "stat": "¥200–300k",
+        "statLabel": "Needed per season (average income is about ¥200k)",
+        "title": "Not enough capital",
+        "body": "The money is needed before the harvest. Without it, equipment sits unused and some farmers give up farming altogether."
       }
     ],
     "source": "Source: Philippine Department of Agriculture statistics; Research Development Extension survey (as cited on FUNDINNO)"
   },
   "Solution": {
-    "eyebrow": "02 — The solution",
+    "eyebrow": "The solution",
     "title": "The role Japan's agricultural co-ops play, delivered digitally to the world.",
     "lead": "Finance, distribution and a fair price. In countries with no cooperative, a smartphone becomes the cooperative.",
     "pillars": [
       {
         "tag": "FINANCE",
         "title": "Agricultural finance",
-        "body": "Fast, low-cost loans for seed, fertiliser and equipment, underwritten by AI credit scoring instead of land collateral."
+        "body": "Fast, low-cost loans for seed, fertiliser and equipment, underwritten by AI credit scoring instead of land collateral.",
+        "big": "Lend"
       },
       {
         "tag": "VALUE CHAIN",
         "title": "Food value chain",
-        "body": "Crop purchasing and buyer matching end to end, built with local intermediaries and their market know-how, not against them."
+        "body": "Crop purchasing and buyer matching end to end, built with local intermediaries and their market know-how, not against them.",
+        "big": "Move"
       },
       {
         "tag": "AI",
         "title": "AI dynamic pricing",
-        "body": "Highly accurate vegetable price prediction, giving farmers and buyers a transparent, fair price."
+        "body": "Highly accurate vegetable price prediction, giving farmers and buyers a transparent, fair price.",
+        "big": "Price"
       }
     ],
-    "patent": "Each technology is patent-pending in Japan and internationally"
+    "patent": "Each technology is patent-pending in Japan and internationally",
+    "stamp": "PATENT PENDING"
   },
   "How": {
-    "eyebrow": "03 — How it works",
+    "eyebrow": "How it works",
     "title": "From loan to delivery, in a single app.",
     "steps": [
       {
@@ -112,7 +121,7 @@
     "illustrative": "* Graphics are illustrations of the service."
   },
   "Impact": {
-    "eyebrow": "04 — Traction & targets",
+    "eyebrow": "Traction & targets",
     "title": "The service is already moving.",
     "lead": "Launched on 30 September 2021 in Benguet, Philippines. Within days, a waiting list formed.",
     "achievedLabel": "Achieved",
@@ -159,7 +168,7 @@
     "disclaimer": "Figures reflect information published in 2021–2022. Targets are the issuer's forecasts and are not guaranteed."
   },
   "Partners": {
-    "eyebrow": "05 — Partnerships",
+    "eyebrow": "Partnerships",
     "title": "Built with governments, universities and industry.",
     "lead": "Working with public bodies, research institutions and companies in Japan and the Philippines to build a trustworthy foundation.",
     "items": [
@@ -191,7 +200,7 @@
     "licence": "Holds a lending licence in the Philippines"
   },
   "Roadmap": {
-    "eyebrow": "06 — Roadmap",
+    "eyebrow": "Roadmap",
     "title": "From the Philippines to Asia and Africa.",
     "lead": "The same problem exists across the world. We will carry a proven model to each new market.",
     "steps": [
@@ -214,7 +223,7 @@
     "foodLoss": "Cutting food loss is a core theme too: low-cost insulation for transport and re-circulating unsold produce."
   },
   "Team": {
-    "eyebrow": "07 — Team",
+    "eyebrow": "Team",
     "title": "A global team in finance and technology.",
     "lead": "Megabank new-business experience combined with strength in AI and app development.",
     "members": [
@@ -239,7 +248,7 @@
     ]
   },
   "Contact": {
-    "eyebrow": "08 — Contact",
+    "eyebrow": "Contact",
     "title": "Let's build the future of farming together.",
     "vision": "With the determination to continuously produce benefits to the world, seeking long term industrial development, we aim to grow together with our customers through our services. Our business orientation is innovation; through IT or other new techniques we offer solutions to our customers.",
     "visionLabel": "Vision",
@@ -264,6 +273,7 @@
     "company": "Long Term Industrial Development, Inc.",
     "notice": "An unofficial concept preview created for the JETRO job fair. Content is based on public information; this is not the official LTID website.",
     "sources": "Sources: ltid.jp / FUNDINNO project page (2022) / company introduction video",
-    "rights": "Concept by"
+    "rights": "Concept by",
+    "credit": "Made with ramen"
   }
 }

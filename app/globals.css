@@ -1,30 +1,31 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-ink: #05191a;
-  --color-ink-2: #082426;
-  --color-ink-3: #0d3235;
-  --color-teal: #008b8b;
-  --color-jade: #19d3b5;
-  --color-gold: #f2b84b;
-  --color-paper: #f4f1e8;
-  --color-paper-dim: #b9c7c2;
-  --color-alert: #dc3232;
+  /* washi paper, sumi ink, vermilion sun, young rice */
+  --color-paper: #f5efe2;
+  --color-paper-2: #ebe1cb;
+  --color-sumi: #17140f;
+  --color-sumi-2: #2a2620;
+  --color-matcha: #1c5a38;
+  --color-matcha-2: #14452a;
+  --color-leaf: #9ccf53;
+  --color-shu: #ee4b2b;
+  --color-sun: #ffb020;
+  --color-sakura: #ffb7c9;
 
-  --font-sans: var(--font-noto-jp), var(--font-grotesk), system-ui, sans-serif;
-  --font-display: var(--font-grotesk), var(--font-noto-jp), system-ui, sans-serif;
+  --font-sans: var(--font-noto-jp), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-shippori), system-ui, sans-serif;
   --font-serif: var(--font-shippori), "Noto Serif JP", serif;
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
-  background: var(--color-ink);
+  background: var(--color-paper);
   scroll-behavior: auto;
 }
-
 html.lenis,
 html.lenis body {
   height: auto;
@@ -34,10 +35,10 @@ html.lenis body {
 }
 
 body {
-  background: var(--color-ink);
-  color: var(--color-paper);
+  background: var(--color-paper);
+  color: var(--color-sumi);
   font-family: var(--font-sans);
-  line-height: 1.8;
+  line-height: 1.85;
   line-break: strict;
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
@@ -45,63 +46,69 @@ body {
 
 :lang(ja) h1,
 :lang(ja) h2,
+:lang(ja) h3,
+:lang(ja) p,
+:lang(ja) blockquote {
+  word-break: auto-phrase; /* phrase-aware Japanese line breaks (Chromium) */
+}
+:lang(ja) h1,
+:lang(ja) h2,
 :lang(ja) h3 {
   font-feature-settings: "palt";
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
-
 h1,
 h2,
 h3 {
   text-wrap: balance;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 ::selection {
-  background: var(--color-jade);
-  color: var(--color-ink);
+  background: var(--color-shu);
+  color: var(--color-paper);
 }
-
 :focus-visible {
-  outline: 2px solid var(--color-jade);
+  outline: 3px solid var(--color-shu);
   outline-offset: 3px;
   border-radius: 4px;
 }
 
-/* Reusable utilities */
+/* ---------- design language ---------- */
 .eyebrow {
   font-family: var(--font-display);
-  font-size: 0.75rem;
-  letter-spacing: 0.28em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-jade);
 }
 
-.glass {
-  background: linear-gradient(
-    145deg,
-    rgb(255 255 255 / 0.07),
-    rgb(255 255 255 / 0.02)
-  );
-  border: 1px solid rgb(255 255 255 / 0.1);
-  backdrop-filter: blur(14px);
+/* paper grain overlay for tactile sections */
+.grain {
+  position: relative;
 }
-
-.grain::after {
+.grain::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.06;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.09  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-.text-gradient {
-  background: linear-gradient(100deg, var(--color-paper) 10%, var(--color-jade) 60%, var(--color-gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* hard offset "printed" shadow */
+.print-shadow {
+  box-shadow: 8px 8px 0 0 var(--color-sumi);
+}
+
+/* hatched fill (used for the 20–30 range) */
+.hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-matcha) 0 3px,
+    var(--color-leaf) 3px 6px
+  );
 }
 
 /* split-text line masks */
@@ -110,8 +117,30 @@ h3 {
   display: block;
 }
 
+/* marquee */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;
   }
+  .marquee-track {
+    animation: none;
+  }
+}
+
+.print-shadow-sm {
+  box-shadow: 4px 4px 0 0 var(--color-sumi);
+}
+.print-shadow-paper {
+  box-shadow: 8px 8px 0 0 var(--color-paper);
 }

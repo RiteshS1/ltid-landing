@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Noto_Sans_JP, Shippori_Mincho, Space_Grotesk } from "next/font/google";
+import { Noto_Sans_JP, Shippori_Mincho, Bricolage_Grotesque } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import SmoothScroll from "@/components/ui/SmoothScroll";
 import "../globals.css";
@@ -19,15 +19,15 @@ const shippori = Shippori_Mincho({
   display: "swap",
   preload: false,
 });
-const grotesk = Space_Grotesk({
-  variable: "--font-grotesk",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
   display: "swap",
 });
 
 export const viewport: Viewport = {
-  themeColor: "#05191a",
-  colorScheme: "dark",
+  themeColor: "#f5efe2",
+  colorScheme: "light",
 };
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ltid-landing.vercel.app";
@@ -45,10 +45,7 @@ export async function generateMetadata({
     metadataBase: new URL(BASE),
     title: t("title"),
     description: t("description"),
-    alternates: {
-      canonical: `/${locale}`,
-      languages: { ja: "/ja", en: "/en", "x-default": "/ja" },
-    },
+    alternates: { canonical: "/" },
     openGraph: {
       title: t("ogTitle"),
       description: t("description"),
@@ -74,7 +71,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${notoJp.variable} ${shippori.variable} ${grotesk.variable}`}
+      className={`${notoJp.variable} ${shippori.variable} ${bricolage.variable}`}
     >
       <body suppressHydrationWarning>
         <NextIntlClientProvider>

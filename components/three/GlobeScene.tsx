@@ -6,6 +6,8 @@ import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import * as THREE from "three";
 import land from "@/lib/data/land-dots.json";
 import { ARCS, CITIES, globeState } from "@/lib/globeState";
+import Island from "./Island";
+import { Clouds, Petals, Sun } from "./Atmosphere3D";
 
 const deg = Math.PI / 180;
 
@@ -31,7 +33,7 @@ const dotVert = /* glsl */ `
     vAlpha = smoothstep(-0.15, 0.45, facing);
     float d = acos(clamp(dot(normalize(position), uCenter), -1.0, 1.0));
     float wave = fract(uTime * 0.12) * 2.2;
-    vGlow = smoothstep(0.18, 0.0, abs(wave - d)) * 0.9;
+    vGlow = smoothstep(0.07, 0.0, abs(wave - d)) * 0.8;
     gl_PointSize = (2.1 + vGlow * 2.5) * uPx * (3.4 / -mv.z);
   }
 `;
@@ -42,10 +44,10 @@ const dotFrag = /* glsl */ `
     float r = length(gl_PointCoord - 0.5);
     if (r > 0.5) discard;
     float soft = smoothstep(0.5, 0.15, r);
-    vec3 base = vec3(0.10, 0.70, 0.66);
-    vec3 hot = vec3(0.95, 0.80, 0.40);
+    vec3 base = vec3(0.96, 0.90, 0.76);
+    vec3 hot = vec3(1.0, 0.45, 0.20);
     vec3 col = mix(base, hot, vGlow);
-    gl_FragColor = vec4(col * (0.75 + vGlow), soft * vAlpha * (0.55 + vGlow));
+    gl_FragColor = vec4(col, soft * vAlpha * (0.6 + vGlow));
   }
 `;
 
@@ -79,7 +81,7 @@ function LandDots() {
         depthWrite={false}
         uniforms={{
           uTime: { value: 0 },
-          uPx: { value: Math.min(gl.getPixelRatio(), 2) * 1.25 },
+          uPx: { value: Math.min(gl.getPixelRatio(), 2) * 2.6 },
           uCenter: { value: center },
         }}
       />
@@ -105,7 +107,7 @@ function Atmosphere() {
           varying vec3 vN;
           void main(){
             float i = pow(0.62 - dot(vN, vec3(0.0,0.0,1.0)), 3.0);
-            gl_FragColor = vec4(vec3(0.05,0.78,0.72), 1.0) * clamp(i, 0.0, 1.0) * 0.9;
+            gl_FragColor = vec4(vec3(1.0,0.55,0.22), 1.0) * clamp(i, 0.0, 1.0) * 0.45;
           }
         `}
       />
@@ -117,7 +119,7 @@ function Core() {
   return (
     <mesh>
       <sphereGeometry args={[0.992, 64, 64]} />
-      <meshBasicMaterial color="#061f21" />
+      <meshBasicMaterial color="#0d3a25" />
     </mesh>
   );
 }
@@ -157,7 +159,7 @@ function Arc({ index, from, to }: { index: number; from: THREE.Vector3; to: THRE
             if (vUv.x > uReveal) discard;
             float p = fract(uTime * 0.28 + uOffset);
             float pulse = exp(-pow((vUv.x - p) * 9.0, 2.0));
-            vec3 col = mix(vec3(0.10,0.83,0.71), vec3(0.95,0.72,0.29), pulse);
+            vec3 col = mix(vec3(1.0,0.42,0.2), vec3(1.0,0.86,0.4), pulse);
             float edge = smoothstep(uReveal, uReveal - 0.04, vUv.x);
             gl_FragColor = vec4(col, (0.45 + pulse * 0.9) * edge);
           }
@@ -188,11 +190,11 @@ function Pin({ lat, lon, major }: { lat: number; lon: number; major?: boolean })
     <group ref={group} position={pos}>
       <mesh>
         <sphereGeometry args={[major ? 0.016 : 0.011, 16, 16]} />
-        <meshBasicMaterial color={major ? "#f2b84b" : "#19d3b5"} toneMapped={false} />
+        <meshBasicMaterial color={major ? "#ffb020" : "#ff6a3d"} toneMapped={false} />
       </mesh>
       <mesh ref={ring}>
         <ringGeometry args={[0.014, 0.019, 32]} />
-        <meshBasicMaterial color={major ? "#f2b84b" : "#19d3b5"} transparent depthWrite={false} side={THREE.DoubleSide} />
+        <meshBasicMaterial color={major ? "#ffb020" : "#ff6a3d"} transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -225,21 +227,32 @@ function Stars() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[pos, 3]} />
       </bufferGeometry>
-      <pointsMaterial size={0.018} color="#9fe9dc" transparent opacity={0.5} sizeAttenuation depthWrite={false} />
+      <pointsMaterial size={0.018} color="#f5efe2" transparent opacity={0.55} sizeAttenuation depthWrite={false} />
     </points>
   );
 }
 
 /* ---------- Rig: follows globeState ---------- */
 function Rig({ reduced }: { reduced: boolean }) {
-  const outer = useRef<THREE.Group>(null);
-  const inner = useRef<THREE.Group>(null);
+  const globeOuter = useRef<THREE.Group>(null);
+  const globeInner = useRef<THREE.Group>(null);
+  const islandWrap = useRef<THREE.Group>(null);
+  const islandSpin = useRef<THREE.Group>(null);
+  const stars = useRef<THREE.Group>(null);
+  const skyProps = useRef<THREE.Group>(null);
+  const mix = useRef(0);
   const { size, invalidate } = useThree();
 
   useEffect(() => {
     globeState.invalidate = invalidate;
+    const onMove = (e: PointerEvent) => {
+      globeState.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      globeState.pointer.y = -((e.clientY / window.innerHeight) * 2 - 1);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
     return () => {
       globeState.invalidate = null;
+      window.removeEventListener("pointermove", onMove);
     };
   }, [invalidate]);
 
@@ -247,41 +260,86 @@ function Rig({ reduced }: { reduced: boolean }) {
 
   useFrame((state, dt) => {
     if (!globeState.active) return;
-    const k = 1 - Math.pow(0.001, dt); // frame-rate independent damping
+    const k = 1 - Math.pow(0.001, dt);
     const desktop = size.width >= 900;
-    if (outer.current && inner.current) {
-      const sway = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.15) * 4;
-      inner.current.rotation.y = THREE.MathUtils.lerp(inner.current.rotation.y, -(globeState.lon + sway) * deg, k * 0.6);
-      outer.current.rotation.x = THREE.MathUtils.lerp(outer.current.rotation.x, globeState.lat * deg, k * 0.6);
-      const s = THREE.MathUtils.lerp(outer.current.scale.x, globeState.zoom * (desktop ? 1 : 0.82), k * 0.6);
-      outer.current.scale.setScalar(s);
-      const tx = desktop ? globeState.offsetX : 0;
-      const ty = desktop ? 0 : -0.8;
-      outer.current.position.x = THREE.MathUtils.lerp(outer.current.position.x, tx, k * 0.6);
-      outer.current.position.y = THREE.MathUtils.lerp(outer.current.position.y, ty, k * 0.6);
+    const t = state.clock.elapsedTime;
+    const p = globeState.pointer;
+
+    mix.current = THREE.MathUtils.lerp(mix.current, globeState.mode, k * 0.9);
+    const m = mix.current;
+
+    /* ----- island (hero) ----- */
+    const iw = islandWrap.current;
+    const isp = islandSpin.current;
+    if (iw && isp) {
+      iw.visible = m < 0.5;
+      const base = desktop ? 0.66 : 0.37;
+      iw.scale.setScalar(THREE.MathUtils.lerp(iw.scale.x, base * (1 - m) * (1 - globeState.heroScroll * 0.25), k * 0.6));
+      const tx = desktop ? 1.95 : 0;
+      const ty = (desktop ? -0.15 : -1.45) + globeState.heroScroll * 1.1 + Math.sin(t * 0.9) * 0.07;
+      iw.position.x = THREE.MathUtils.lerp(iw.position.x, tx - p.x * 0.18, k * 0.5);
+      iw.position.y = THREE.MathUtils.lerp(iw.position.y, ty - p.y * 0.1, k * 0.5);
+      const auto = reduced ? 0.6 : t * 0.1;
+      isp.rotation.y = THREE.MathUtils.lerp(isp.rotation.y, auto + p.x * 0.55 + globeState.heroScroll * 1.8, k * 0.35);
+      isp.rotation.x = THREE.MathUtils.lerp(isp.rotation.x, 0.42 - p.y * 0.16 + globeState.heroScroll * 0.2, k * 0.35);
     }
-    // gentle pointer parallax
+
+    /* ----- globe (roadmap) ----- */
+    const go = globeOuter.current;
+    const gi = globeInner.current;
+    if (go && gi) {
+      go.visible = m > 0.02;
+      const sway = reduced ? 0 : Math.sin(t * 0.15) * 4;
+      gi.rotation.y = THREE.MathUtils.lerp(gi.rotation.y, -(globeState.lon + sway) * deg + p.x * 0.12, k * 0.6);
+      go.rotation.x = THREE.MathUtils.lerp(go.rotation.x, globeState.lat * deg - p.y * 0.08, k * 0.6);
+      const s = THREE.MathUtils.lerp(go.scale.x, globeState.zoom * (desktop ? 1.15 : 1.0) * m, k * 0.6);
+      go.scale.setScalar(Math.max(s, 0.0001));
+      go.position.x = THREE.MathUtils.lerp(go.position.x, desktop ? 1.9 : 0, k * 0.6);
+      go.position.y = THREE.MathUtils.lerp(go.position.y, desktop ? 0 : -1.1, k * 0.6);
+    }
+    if (stars.current) stars.current.visible = m > 0.5;
+    if (skyProps.current) skyProps.current.visible = m < 0.5;
+
+    /* camera parallax */
     const cam = state.camera;
-    cam.position.x = THREE.MathUtils.lerp(cam.position.x, state.pointer.x * 0.25, k * 0.4);
-    cam.position.y = THREE.MathUtils.lerp(cam.position.y, state.pointer.y * 0.18, k * 0.4);
-    cam.lookAt(0, 0, 0);
+    cam.position.x = THREE.MathUtils.lerp(cam.position.x, p.x * 0.35, k * 0.4);
+    cam.position.y = THREE.MathUtils.lerp(cam.position.y, 0.9 + p.y * 0.25, k * 0.4);
+    cam.lookAt(0, 0.2, 0);
     state.invalidate(); // keep looping while active
   });
 
   return (
-    <group ref={outer}>
-      <group ref={inner} rotation={[0, -125 * deg, 0]}>
-        <Core />
-        <LandDots />
-        <Atmosphere />
-        {CITIES.map((c) => (
-          <Pin key={c.id} lat={c.lat} lon={c.lon} major={c.major} />
-        ))}
-        {ARCS.map(([a, b], i) => (
-          <Arc key={a + b} index={i} from={cities[a]} to={cities[b]} />
-        ))}
+    <>
+      {/* ---------- hero: farm island ---------- */}
+      <group ref={islandWrap}>
+        <group ref={islandSpin}>
+          <Island />
+        </group>
       </group>
-    </group>
+      <group ref={skyProps}>
+        <Sun />
+        <Clouds />
+      </group>
+      <Petals />
+
+      {/* ---------- roadmap: globe ---------- */}
+      <group ref={stars}>
+        <Stars />
+      </group>
+      <group ref={globeOuter}>
+        <group ref={globeInner} rotation={[0, -125 * deg, 0]}>
+          <Core />
+          <LandDots />
+          <Atmosphere />
+          {CITIES.map((c) => (
+            <Pin key={c.id} lat={c.lat} lon={c.lon} major={c.major} />
+          ))}
+          {ARCS.map(([a, b], i) => (
+            <Arc key={a + b} index={i} from={cities[a]} to={cities[b]} />
+          ))}
+        </group>
+      </group>
+    </>
   );
 }
 
@@ -299,15 +357,17 @@ export default function GlobeScene() {
     <Canvas
       frameloop="demand"
       dpr={[1, lowPower ? 1.5 : 2]}
-      camera={{ fov: 35, position: [0, 0, 4.2] }}
+      camera={{ fov: 32, position: [0, 0.9, 8] }}
       gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <Stars />
+      <hemisphereLight args={["#ffe3c4", "#7aa84a", 1.15]} />
+      <directionalLight position={[4, 6, 5]} intensity={2.3} color="#fff0d6" />
+      <directionalLight position={[-5, 2, -3]} intensity={0.7} color="#ffb08a" />
       <Rig reduced={reduced} />
       {!lowPower && (
         <EffectComposer multisampling={0}>
-          <Bloom intensity={0.7} luminanceThreshold={0.25} luminanceSmoothing={0.4} mipmapBlur />
+          <Bloom intensity={0.45} luminanceThreshold={0.92} luminanceSmoothing={0.3} mipmapBlur />
         </EffectComposer>
       )}
     </Canvas>

@@ -8,15 +8,15 @@ An unofficial concept preview of a landing page for **Long Term Industrial Devel
 
 ```bash
 pnpm install
-pnpm dev        # http://localhost:3000  (redirects to /ja or /en by Accept-Language)
+pnpm dev        # http://localhost:3000  (language from the browser's Accept-Language; one URL for all languages)
 pnpm build
 ```
 
 ## Structure
 
-- `app/[locale]/` — locale-prefixed routes (`/ja`, `/en`); `proxy.ts` negotiates locale
+- `app/[locale]/` + `proxy.ts` — single-URL i18n: the locale comes from Accept-Language, then the `NEXT_LOCALE` cookie set by the language switcher (`localePrefix: "never"`)
 - `messages/{ja,en}.json` — all copy
-- `components/sections/` — page sections; `components/three/` — globe scene; `lib/globeState.ts` links scroll → 3D
+- `components/sections/` — page sections; `components/three/` — procedural farm-island + globe scene (`Island.tsx`, `Atmosphere3D.tsx`, `GlobeScene.tsx`); `lib/globeState.ts` links scroll/cursor → 3D
 - `scripts/gen-land.mjs` — regenerates `lib/data/land-dots.json` from Natural Earth (world-atlas)
 
 Set `NEXT_PUBLIC_SITE_URL` in Vercel to the production URL for correct canonical/OG metadata.
