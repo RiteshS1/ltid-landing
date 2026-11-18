@@ -19,4 +19,11 @@ pnpm build
 - `components/sections/` — page sections; `components/three/` — procedural farm-island + globe scene (`Island.tsx`, `Atmosphere3D.tsx`, `GlobeScene.tsx`); `lib/globeState.ts` links scroll/cursor → 3D
 - `scripts/gen-land.mjs` — regenerates `lib/data/land-dots.json` from Natural Earth (world-atlas)
 
-Set `NEXT_PUBLIC_SITE_URL` in Vercel to the production URL for correct canonical/OG metadata.
+## Environment
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | `https://ltid-landing.vercel.app` | Canonical URL, OG image URLs, sitemap |
+| `NEXT_PUBLIC_ALLOW_INDEXING` | unset (noindex) | Set to `true` to let search engines index the page. It is off by default because this is an unofficial concept page about a real company; link previews work either way. |
+
+The contact form needs no backend: it opens the visitor's mail app (`mailto:`) with their message prefilled, addressed to LTID's public inbox.

@@ -1,8 +1,23 @@
 {
   "Meta": {
-    "title": "LTID | Turning the world's farms into a digital cooperative",
-    "description": "Long Term Industrial Development (LTID) is building a digital agricultural cooperative that brings finance, distribution and AI to farmers in developing countries.",
-    "ogTitle": "LTID — A digital cooperative for fair farming worldwide"
+    "title": "LTID | A digital agricultural cooperative — Finance × Distribution × AI",
+    "description": "Long Term Industrial Development (LTID) builds a digital agricultural cooperative: AI credit scoring, dynamic crop pricing and ride-share logistics that bring fair returns to farmers in developing countries. Live in Benguet, Philippines.",
+    "ogTitle": "LTID — A digital cooperative for fair farming worldwide",
+    "ogDescription": "Finance × distribution × AI. From the Philippines to Southeast Asia, India and Africa.",
+    "keywords": [
+      "LTID",
+      "Long Term Industrial Development",
+      "digital agricultural cooperative",
+      "agricultural finance",
+      "agritech",
+      "fintech",
+      "AI credit scoring",
+      "dynamic pricing",
+      "food value chain",
+      "Philippines",
+      "JETRO"
+    ],
+    "pageName": "LTID Digital Cooperative — concept preview"
   },
   "Nav": {
     "problem": "Problem",
@@ -256,11 +271,16 @@
       "email": "Email",
       "subject": "Subject",
       "message": "Message",
-      "submit": "Send message",
-      "sending": "Sending…",
-      "success": "Thank you. This is a demo, so nothing was actually sent.",
+      "submit": "Send via email",
+      "note": "Pressing send opens your email app with your message ready to go.",
+      "opened": "Your email app should now be open with your message. Review it and press send.",
+      "fallback": "If nothing opened, write to us directly at:",
+      "copy": "Copy address",
+      "copied": "Copied",
       "required": "Required",
-      "invalidEmail": "Enter a valid email address"
+      "invalidEmail": "Enter a valid email address",
+      "defaultSubject": "Inquiry from the website",
+      "bodyFrom": "From"
     },
     "addressLabel": "Address",
     "address": "2-24-8 Jindaiji, Mitaka-shi, Tokyo 181-0016, Japan",

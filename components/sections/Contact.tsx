@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { Mail, MapPin, Globe } from "lucide-react";
+import { Check, Copy, Mail, MapPin, Globe } from "lucide-react";
 import SplitHeading from "@/components/ui/SplitHeading";
 
 type Errors = Partial<Record<"name" | "email" | "message", string>>;
@@ -10,22 +10,40 @@ type Errors = Partial<Record<"name" | "email" | "message", string>>;
 export default function Contact() {
   const t = useTranslations("Contact");
   const [errors, setErrors] = useState<Errors>({});
-  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+  const [opened, setOpened] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const to = t("email");
 
+  /** Validates, then hands the message to the visitor's own mail app (mailto:). */
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const next: Errors = {};
-    if (!String(f.get("name") ?? "").trim()) next.name = t("form.required");
+    const name = String(f.get("name") ?? "").trim();
     const email = String(f.get("email") ?? "").trim();
+    const subject = String(f.get("subject") ?? "").trim() || t("form.defaultSubject");
+    const message = String(f.get("message") ?? "").trim();
+
+    const next: Errors = {};
+    if (!name) next.name = t("form.required");
     if (!email) next.email = t("form.required");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = t("form.invalidEmail");
-    if (!String(f.get("message") ?? "").trim()) next.message = t("form.required");
+    if (!message) next.message = t("form.required");
     setErrors(next);
     if (Object.keys(next).length) return;
-    setState("sending");
-    // MVP demo: no backend. Simulate a send.
-    setTimeout(() => setState("done"), 900);
+
+    const body = `${message}\n\n—\n${t("form.bodyFrom")}: ${name}\n${email}`;
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setOpened(true);
+  }
+
+  async function copyAddress() {
+    try {
+      await navigator.clipboard.writeText(to);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable: the address is visible anyway */
+    }
   }
 
   const field =
@@ -82,14 +100,35 @@ export default function Contact() {
               <textarea id="message" name="message" rows={4} className={field} aria-invalid={!!errors.message} />
               {errors.message && <p className="mt-1 text-xs text-shu" role="alert">{errors.message}</p>}
             </div>
-            <button
-              type="submit"
-              disabled={state === "sending"}
-              className="rounded-full bg-sun px-9 py-4 text-sm font-extrabold text-sumi transition-colors hover:bg-shu hover:text-paper disabled:opacity-60"
-            >
-              {state === "sending" ? t("form.sending") : t("form.submit")}
-            </button>
-            {state === "done" && <p className="text-sm text-sun" role="status">{t("form.success")}</p>}
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 rounded-full bg-sun px-9 py-4 text-sm font-extrabold text-sumi transition-colors hover:bg-shu hover:text-paper"
+              >
+                <Mail className="h-4 w-4" />
+                {t("form.submit")}
+              </button>
+              <p className="max-w-xs text-xs leading-5 text-paper/60">{t("form.note")}</p>
+            </div>
+            {opened && (
+              <div className="border-2 border-sun p-5 text-sm" role="status">
+                <p className="font-bold text-sun">{t("form.opened")}</p>
+                <p className="mt-2 text-paper/80">{t("form.fallback")}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <a className="font-bold underline decoration-sun underline-offset-4" href={`mailto:${to}`}>
+                    {to}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={copyAddress}
+                    className="inline-flex items-center gap-1.5 border border-paper/40 px-2.5 py-1 text-xs font-bold transition-colors hover:border-sun hover:text-sun"
+                  >
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? t("form.copied") : t("form.copy")}
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </div>
