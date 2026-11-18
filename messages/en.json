@@ -1,0 +1,269 @@
+{
+  "Meta": {
+    "title": "LTID | Turning the world's farms into a digital cooperative",
+    "description": "Long Term Industrial Development (LTID) is building a digital agricultural cooperative that brings finance, distribution and AI to farmers in developing countries.",
+    "ogTitle": "LTID — A digital cooperative for fair farming worldwide"
+  },
+  "Nav": {
+    "problem": "Problem",
+    "solution": "Solution",
+    "how": "How it works",
+    "impact": "Impact",
+    "roadmap": "Roadmap",
+    "team": "Team",
+    "contact": "Contact",
+    "language": "Language"
+  },
+  "Hero": {
+    "eyebrow": "Long Term Industrial Development",
+    "titleLine1": "Turning the world's farms",
+    "titleLine2": "into a digital cooperative.",
+    "subtitle": "Finance × distribution × AI. Fair returns and lasting growth for farmers in developing nations.",
+    "ctaPrimary": "Explore the vision",
+    "ctaSecondary": "Get in touch",
+    "scroll": "Scroll",
+    "tags": [
+      "Born in Tokyo",
+      "Live in the Philippines",
+      "Patents pending"
+    ],
+    "mapLabel": "Tokyo → Benguet → Asia → Africa"
+  },
+  "Problem": {
+    "eyebrow": "01 — The problem",
+    "title": "Along the way from field to table, the value disappears.",
+    "lead": "Farming nations, yet farmers are stuck on both capital and market access. When a retailer pays 100, only 20–30 reaches the farmer.",
+    "chainRetailer": "Paid by the retailer",
+    "chainFarmer": "Reaches the farmer",
+    "chainMiddle": "10+ intermediaries",
+    "perHundred": "per 100",
+    "aprLabel": "Annual interest when borrowing from local lenders",
+    "aprNote": "There are no banks in rural areas, and collateral reviews take months to a year. Farmers have no choice but to borrow at punishing rates.",
+    "points": [
+      {
+        "title": "No access to capital",
+        "body": "One growing season needs roughly ¥200–300k. With an average farm income near ¥200k, buying seed and fertiliser is out of reach."
+      },
+      {
+        "title": "No price visibility",
+        "body": "Routes to market and trading prices stay with the intermediaries. Farmers cannot know what their harvest is truly worth."
+      },
+      {
+        "title": "No way to move produce",
+        "body": "Buying or renting a truck is expensive, and damage in transit wastes part of every harvest."
+      }
+    ],
+    "source": "Source: Philippine Department of Agriculture statistics; Research Development Extension survey (as cited on FUNDINNO)"
+  },
+  "Solution": {
+    "eyebrow": "02 — The solution",
+    "title": "The role Japan's agricultural co-ops play, delivered digitally to the world.",
+    "lead": "Finance, distribution and a fair price. In countries with no cooperative, a smartphone becomes the cooperative.",
+    "pillars": [
+      {
+        "tag": "FINANCE",
+        "title": "Agricultural finance",
+        "body": "Fast, low-cost loans for seed, fertiliser and equipment, underwritten by AI credit scoring instead of land collateral."
+      },
+      {
+        "tag": "VALUE CHAIN",
+        "title": "Food value chain",
+        "body": "Crop purchasing and buyer matching end to end, built with local intermediaries and their market know-how, not against them."
+      },
+      {
+        "tag": "AI",
+        "title": "AI dynamic pricing",
+        "body": "Highly accurate vegetable price prediction, giving farmers and buyers a transparent, fair price."
+      }
+    ],
+    "patent": "Each technology is patent-pending in Japan and internationally"
+  },
+  "How": {
+    "eyebrow": "03 — How it works",
+    "title": "From loan to delivery, in a single app.",
+    "steps": [
+      {
+        "index": "STEP 01",
+        "title": "AI judges credit, loans arrive fast",
+        "body": "Accuracy improves as borrower data grows. No collateral: start small, then scale loan sizes step by step.",
+        "scoreLabel": "Credit score",
+        "loanLabel": "Loan amount (illustrative)",
+        "chip": "Review: days → near-instant"
+      },
+      {
+        "index": "STEP 02",
+        "title": "AI predicts a fair price and finds the buyer",
+        "body": "Dynamic pricing from supply, demand and market signals, so farmers finally see what their crop is worth.",
+        "chartLabel": "Vegetable price: forecast vs. actual (illustrative)",
+        "actual": "Actual",
+        "predicted": "AI forecast"
+      },
+      {
+        "index": "STEP 03",
+        "title": "Ride-share logistics, safely",
+        "body": "Truck owners are matched with farmers. Photos at dispatch and arrival protect against loss, damage and fraud.",
+        "from": "Farm",
+        "to": "Market",
+        "photoSend": "Photo at dispatch",
+        "photoReceive": "Photo at arrival",
+        "chip": "Free to use"
+      }
+    ],
+    "illustrative": "* Graphics are illustrations of the service."
+  },
+  "Impact": {
+    "eyebrow": "04 — Traction & targets",
+    "title": "The service is already moving.",
+    "lead": "Launched on 30 September 2021 in Benguet, Philippines. Within days, a waiting list formed.",
+    "achievedLabel": "Achieved",
+    "targetLabel": "Target",
+    "stats": [
+      {
+        "value": 160,
+        "suffix": "",
+        "label": "Farmers waiting for a loan",
+        "note": "Applications right after launch",
+        "source": "FUNDINNO, as of 2022"
+      },
+      {
+        "value": 500,
+        "prefix": "~",
+        "suffix": "",
+        "label": "Farmers on the sign-up waitlist",
+        "note": "400–500 waiting to apply",
+        "source": "FUNDINNO, as of 2022"
+      },
+      {
+        "value": 3,
+        "suffix": "×",
+        "label": "Projected farmer income",
+        "note": "About +200% vs. today (modelled)",
+        "source": "Company estimate, FUNDINNO 2022"
+      }
+    ],
+    "targets": [
+      {
+        "value": 23000,
+        "suffix": "",
+        "label": "Borrowers by 2028",
+        "source": "Company plan"
+      },
+      {
+        "value": 3.5,
+        "prefix": "~¥",
+        "suffix": "B",
+        "label": "Projected revenue in 2028 (IPO scenario)",
+        "source": "Company plan"
+      }
+    ],
+    "disclaimer": "Figures reflect information published in 2021–2022. Targets are the issuer's forecasts and are not guaranteed."
+  },
+  "Partners": {
+    "eyebrow": "05 — Partnerships",
+    "title": "Built with governments, universities and industry.",
+    "lead": "Working with public bodies, research institutions and companies in Japan and the Philippines to build a trustworthy foundation.",
+    "items": [
+      {
+        "name": "JICA",
+        "role": "Selected for joint project"
+      },
+      {
+        "name": "MAFF Japan",
+        "role": "Subsidy awarded"
+      },
+      {
+        "name": "JETRO / X-HUB TOKYO",
+        "role": "Outbound program selected"
+      },
+      {
+        "name": "Benguet State University",
+        "role": "Field operations & research"
+      },
+      {
+        "name": "The University of Tokyo",
+        "role": "AI algorithm research"
+      },
+      {
+        "name": "IIT (India)",
+        "role": "India expansion in discussion"
+      }
+    ],
+    "licence": "Holds a lending licence in the Philippines"
+  },
+  "Roadmap": {
+    "eyebrow": "06 — Roadmap",
+    "title": "From the Philippines to Asia and Africa.",
+    "lead": "The same problem exists across the world. We will carry a proven model to each new market.",
+    "steps": [
+      {
+        "when": "NOW",
+        "place": "Benguet, Philippines",
+        "body": "Live with vegetable farmers. Equipment-finance talks with a major manufacturer are underway."
+      },
+      {
+        "when": "NEXT",
+        "place": "Nationwide, more crops",
+        "body": "Rice, corn and other staples. Preparing crop insurance, equipment sharing, food banks and more."
+      },
+      {
+        "when": "THEN",
+        "place": "Southeast Asia, India, Africa",
+        "body": "Expanding to India and Mozambique in East Africa: the digital cooperative as a global standard."
+      }
+    ],
+    "foodLoss": "Cutting food loss is a core theme too: low-cost insulation for transport and re-circulating unsold produce."
+  },
+  "Team": {
+    "eyebrow": "07 — Team",
+    "title": "A global team in finance and technology.",
+    "lead": "Megabank new-business experience combined with strength in AI and app development.",
+    "members": [
+      {
+        "role": "CEO",
+        "name": "Yasuo Taniguchi",
+        "initials": "YT",
+        "bio": "Joined Sumitomo Bank (now SMBC) in 1998: derivatives development, Asia investment-banking sales, and head of the trust-review group. Drove Japan's first covered bond. MSc in Mathematical Sciences, University of Tokyo; MBA."
+      },
+      {
+        "role": "Director / Management consultant",
+        "name": "Mariya Yokota",
+        "initials": "MY",
+        "bio": "Led Sony's broadcast and professional equipment business, with postings in Germany, London and Beijing, covering Eastern Europe, the Middle East, Africa and China. Former President of SFI Leasing."
+      },
+      {
+        "role": "Director",
+        "name": "Masayuki Fujimoto",
+        "initials": "MF",
+        "bio": "Head of Services & Solutions at Standard Chartered Bank, Tokyo branch (as of 2022). 15+ years in banking across technology operations, digital transformation, automation, technology risk and cyber security. Holds CISA, CISM, CRISC and other certifications. Director since December 2020."
+      }
+    ]
+  },
+  "Contact": {
+    "eyebrow": "08 — Contact",
+    "title": "Let's build the future of farming together.",
+    "vision": "With the determination to continuously produce benefits to the world, seeking long term industrial development, we aim to grow together with our customers through our services. Our business orientation is innovation; through IT or other new techniques we offer solutions to our customers.",
+    "visionLabel": "Vision",
+    "form": {
+      "name": "Your name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message",
+      "submit": "Send message",
+      "sending": "Sending…",
+      "success": "Thank you. This is a demo, so nothing was actually sent.",
+      "required": "Required",
+      "invalidEmail": "Enter a valid email address"
+    },
+    "addressLabel": "Address",
+    "address": "2-24-8 Jindaiji, Mitaka-shi, Tokyo 181-0016, Japan",
+    "emailLabel": "Email",
+    "email": "customerservices@ltid.jp",
+    "web": "www.ltid.jp"
+  },
+  "Footer": {
+    "company": "Long Term Industrial Development, Inc.",
+    "notice": "An unofficial concept preview created for the JETRO job fair. Content is based on public information; this is not the official LTID website.",
+    "sources": "Sources: ltid.jp / FUNDINNO project page (2022) / company introduction video",
+    "rights": "Concept by"
+  }
+}
