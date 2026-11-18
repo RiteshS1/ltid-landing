@@ -5,11 +5,12 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import * as THREE from "three";
 import land from "@/lib/data/land-dots.json";
-import { ARCS, CITIES, globeState } from "@/lib/globeState";
-import Island from "./Island";
-import { Clouds, Petals, Sun } from "./Atmosphere3D";
+import { ARCS, PLACES, REGION_LABELS, globeState } from "@/lib/globeState";
+import Starfield from "./Starfield";
 
 const deg = Math.PI / 180;
+/** key light direction in globe-local space is rotated with the camera, so define it in view space */
+const LIGHT = new THREE.Vector3(-0.55, 0.55, 0.65).normalize();
 
 function ll(lat: number, lon: number, r = 1) {
   return new THREE.Vector3(
@@ -19,54 +20,57 @@ function ll(lat: number, lon: number, r = 1) {
   );
 }
 
-/* ---------- Land dots ---------- */
-const dotVert = /* glsl */ `
-  uniform float uTime;
-  uniform float uPx;
-  uniform vec3 uCenter;
-  varying float vAlpha;
-  varying float vGlow;
-  void main() {
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_Position = projectionMatrix * mv;
-    float facing = dot(normalize(normalMatrix * position), vec3(0.0, 0.0, 1.0));
-    vAlpha = smoothstep(-0.15, 0.45, facing);
-    float d = acos(clamp(dot(normalize(position), uCenter), -1.0, 1.0));
-    float wave = fract(uTime * 0.12) * 2.2;
-    vGlow = smoothstep(0.07, 0.0, abs(wave - d)) * 0.8;
-    gl_PointSize = (2.1 + vGlow * 2.5) * uPx * (3.4 / -mv.z);
-  }
-`;
-const dotFrag = /* glsl */ `
-  varying float vAlpha;
-  varying float vGlow;
-  void main() {
-    float r = length(gl_PointCoord - 0.5);
-    if (r > 0.5) discard;
-    float soft = smoothstep(0.5, 0.15, r);
-    vec3 base = vec3(0.96, 0.90, 0.76);
-    vec3 hot = vec3(1.0, 0.45, 0.20);
-    vec3 col = mix(base, hot, vGlow);
-    gl_FragColor = vec4(col, soft * vAlpha * (0.6 + vGlow));
-  }
-`;
+/* ------------------------------------------------------------------ */
+/* ocean sphere – lit, with terminator shading and a warm fresnel rim   */
+/* ------------------------------------------------------------------ */
+function Ocean() {
+  return (
+    <mesh>
+      <sphereGeometry args={[1, 96, 96]} />
+      <shaderMaterial
+        uniforms={{ uLight: { value: LIGHT } }}
+        vertexShader={/* glsl */ `
+          varying vec3 vN;
+          void main() {
+            vN = normalize(normalMatrix * normal);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `}
+        fragmentShader={/* glsl */ `
+          uniform vec3 uLight;
+          varying vec3 vN;
+          void main() {
+            float diff = max(dot(vN, uLight), 0.0);
+            vec3 night = vec3(0.002, 0.008, 0.006);
+            vec3 day = vec3(0.012, 0.05, 0.032);
+            vec3 col = mix(night, day, pow(diff, 0.9));
+            // soft specular sheen
+            vec3 h = normalize(uLight + vec3(0.0, 0.0, 1.0));
+            col += vec3(1.0, 0.7, 0.45) * pow(max(dot(vN, h), 0.0), 60.0) * 0.05;
+            // warm rim
+            float fres = pow(1.0 - max(dot(vN, vec3(0.0, 0.0, 1.0)), 0.0), 3.0);
+            col += vec3(0.9, 0.22, 0.08) * fres * (0.08 + 0.35 * diff);
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `}
+      />
+    </mesh>
+  );
+}
 
+/* ------------------------------------------------------------------ */
+/* land dots – shaded by the same light                                 */
+/* ------------------------------------------------------------------ */
 function LandDots() {
-  const mat = useRef<THREE.ShaderMaterial>(null);
   const { gl } = useThree();
   const positions = useMemo(() => {
     const arr = new Float32Array(land.length * 3);
     land.forEach(([lat, lon], i) => {
-      const v = ll(lat, lon, 1.002);
+      const v = ll(lat, lon, 1.003);
       arr.set([v.x, v.y, v.z], i * 3);
     });
     return arr;
   }, []);
-  const center = useMemo(() => ll(16.4, 120.6).normalize(), []);
-
-  useFrame(({ clock }) => {
-    if (mat.current) mat.current.uniforms.uTime.value = clock.elapsedTime;
-  });
 
   return (
     <points>
@@ -74,25 +78,83 @@ function LandDots() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <shaderMaterial
-        ref={mat}
-        vertexShader={dotVert}
-        fragmentShader={dotFrag}
         transparent
         depthWrite={false}
-        uniforms={{
-          uTime: { value: 0 },
-          uPx: { value: Math.min(gl.getPixelRatio(), 2) * 2.6 },
-          uCenter: { value: center },
-        }}
+        uniforms={{ uPx: { value: Math.min(gl.getPixelRatio(), 2) }, uLight: { value: LIGHT } }}
+        vertexShader={/* glsl */ `
+          uniform float uPx;
+          uniform vec3 uLight;
+          varying float vLit;
+          varying float vFace;
+          void main() {
+            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * mv;
+            vec3 n = normalize(normalMatrix * position);
+            vFace = n.z;
+            vLit = max(dot(n, uLight), 0.0);
+            gl_PointSize = (1.6 + 1.1 * vLit) * uPx * (5.2 / -mv.z);
+          }
+        `}
+        fragmentShader={/* glsl */ `
+          varying float vLit;
+          varying float vFace;
+          void main() {
+            float r = length(gl_PointCoord - 0.5);
+            if (r > 0.5) discard;
+            vec3 night = vec3(0.05, 0.12, 0.09);
+            vec3 day = vec3(0.95, 0.82, 0.6);
+            vec3 col = mix(night, day, smoothstep(0.0, 0.7, vLit));
+            float a = smoothstep(0.5, 0.2, r) * smoothstep(-0.05, 0.35, vFace) * (0.45 + 0.55 * vLit);
+            gl_FragColor = vec4(col, a);
+          }
+        `}
       />
     </points>
   );
 }
 
-/* ---------- Atmosphere ---------- */
-function Atmosphere() {
+/* ------------------------------------------------------------------ */
+/* graticule – faint lat/long grid for sphericity                      */
+/* ------------------------------------------------------------------ */
+function Graticule() {
+  const geo = useMemo(() => {
+    const pts: number[] = [];
+    const seg = (a: THREE.Vector3, b: THREE.Vector3) => pts.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    for (let lat = -75; lat <= 75; lat += 15)
+      for (let lon = 0; lon < 360; lon += 3) seg(ll(lat, lon, 1.001), ll(lat, lon + 3, 1.001));
+    for (let lon = 0; lon < 360; lon += 15)
+      for (let lat = -87; lat < 87; lat += 3) seg(ll(lat, lon, 1.001), ll(lat + 3, lon, 1.001));
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }, []);
   return (
-    <mesh scale={1.14}>
+    <lineSegments geometry={geo}>
+      <shaderMaterial
+        transparent
+        depthWrite={false}
+        vertexShader={/* glsl */ `
+          varying float vFace;
+          void main() {
+            vFace = normalize(normalMatrix * position).z;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `}
+        fragmentShader={/* glsl */ `
+          varying float vFace;
+          void main() { gl_FragColor = vec4(0.96, 0.9, 0.8, 0.05 * smoothstep(0.0, 0.5, vFace)); }
+        `}
+      />
+    </lineSegments>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* atmosphere halo                                                      */
+/* ------------------------------------------------------------------ */
+function Halo() {
+  return (
+    <mesh scale={1.09}>
       <sphereGeometry args={[1, 64, 64]} />
       <shaderMaterial
         side={THREE.BackSide}
@@ -106,8 +168,8 @@ function Atmosphere() {
         fragmentShader={/* glsl */ `
           varying vec3 vN;
           void main(){
-            float i = pow(0.62 - dot(vN, vec3(0.0,0.0,1.0)), 3.0);
-            gl_FragColor = vec4(vec3(1.0,0.55,0.22), 1.0) * clamp(i, 0.0, 1.0) * 0.45;
+            float i = pow(max(0.6 - dot(vN, vec3(0.0, 0.0, 1.0)), 0.0), 6.0);
+            gl_FragColor = vec4(vec3(1.0, 0.38, 0.16) * i * 0.75, 1.0);
           }
         `}
       />
@@ -115,132 +177,163 @@ function Atmosphere() {
   );
 }
 
-function Core() {
-  return (
-    <mesh>
-      <sphereGeometry args={[0.992, 64, 64]} />
-      <meshBasicMaterial color="#0d3a25" />
-    </mesh>
-  );
-}
+/* ------------------------------------------------------------------ */
+/* arcs – draw → travel → fade loop, ripple on landing                  */
+/* ------------------------------------------------------------------ */
+const PERIOD = 5.2;
 
-/* ---------- Arcs ---------- */
-function Arc({ index, from, to }: { index: number; from: THREE.Vector3; to: THREE.Vector3 }) {
+function Arc({ from, to, offset }: { from: THREE.Vector3; to: THREE.Vector3; offset: number }) {
   const mat = useRef<THREE.ShaderMaterial>(null);
+  const ring = useRef<THREE.Mesh>(null);
+
   const geo = useMemo(() => {
     const angle = from.angleTo(to);
-    const mid = from.clone().add(to).normalize().multiplyScalar(1 + 0.12 + angle * 0.45);
+    const mid = from.clone().add(to).normalize().multiplyScalar(1 + 0.08 + angle * 0.32);
     const curve = new THREE.QuadraticBezierCurve3(from, mid, to);
-    return new THREE.TubeGeometry(curve, 80, 0.0035, 6, false);
+    return new THREE.TubeGeometry(curve, 96, 0.0038, 6, false);
   }, [from, to]);
 
+  const ringQuat = useMemo(() => {
+    const q = new THREE.Quaternion();
+    q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), to.clone().normalize());
+    return q;
+  }, [to]);
+
   useFrame(({ clock }) => {
-    if (!mat.current) return;
-    mat.current.uniforms.uTime.value = clock.elapsedTime;
-    mat.current.uniforms.uReveal.value = globeState.reveal[index] ?? 0;
+    const t = ((clock.elapsedTime + offset) / PERIOD) % 1;
+    if (mat.current) mat.current.uniforms.uT.value = t;
+    if (ring.current) {
+      const rt = THREE.MathUtils.clamp((t - 0.42) / 0.45, 0, 1);
+      ring.current.visible = rt > 0 && rt < 1;
+      ring.current.scale.setScalar(0.4 + rt * 2.0);
+      (ring.current.material as THREE.MeshBasicMaterial).opacity = (1 - rt) * 0.7;
+    }
   });
 
   return (
-    <mesh geometry={geo}>
-      <shaderMaterial
-        ref={mat}
-        transparent
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        uniforms={{ uTime: { value: 0 }, uReveal: { value: 0 }, uOffset: { value: index * 0.27 } }}
-        vertexShader={/* glsl */ `
-          varying vec2 vUv;
-          void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
-        `}
-        fragmentShader={/* glsl */ `
-          uniform float uTime; uniform float uReveal; uniform float uOffset;
-          varying vec2 vUv;
-          void main(){
-            if (vUv.x > uReveal) discard;
-            float p = fract(uTime * 0.28 + uOffset);
-            float pulse = exp(-pow((vUv.x - p) * 9.0, 2.0));
-            vec3 col = mix(vec3(1.0,0.42,0.2), vec3(1.0,0.86,0.4), pulse);
-            float edge = smoothstep(uReveal, uReveal - 0.04, vUv.x);
-            gl_FragColor = vec4(col, (0.45 + pulse * 0.9) * edge);
-          }
-        `}
-      />
-    </mesh>
+    <>
+      <mesh geometry={geo}>
+        <shaderMaterial
+          ref={mat}
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          uniforms={{ uT: { value: 0 } }}
+          vertexShader={/* glsl */ `
+            varying vec2 vUv;
+            void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+          `}
+          fragmentShader={/* glsl */ `
+            uniform float uT;
+            varying vec2 vUv;
+            float ease(float x){ return x < 0.5 ? 4.0*x*x*x : 1.0 - pow(-2.0*x + 2.0, 3.0) / 2.0; }
+            void main(){
+              float x = vUv.x;
+              float head = ease(clamp(uT / 0.42, 0.0, 1.0));
+              float tail = ease(clamp((uT - 0.3) / 0.55, 0.0, 1.0));
+              // faint permanent connection line
+              float base = 0.1;
+              float on = step(tail, x) * step(x, head);
+              float along = clamp((x - tail) / max(head - tail, 1e-3), 0.0, 1.0);
+              float trail = on * pow(along, 1.6);
+              float spark = exp(-pow((x - head) * 55.0, 2.0)) * step(head, 0.999);
+              vec3 col = mix(vec3(0.93, 0.29, 0.17), vec3(1.0, 0.8, 0.35), along);
+              float a = base + trail * 0.9 + spark * 1.4;
+              gl_FragColor = vec4(mix(col, vec3(1.0, 0.95, 0.8), spark), a);
+            }
+          `}
+        />
+      </mesh>
+      <mesh ref={ring} position={to.clone().multiplyScalar(1.004)} quaternion={ringQuat}>
+        <ringGeometry args={[0.016, 0.019, 48]} />
+        <meshBasicMaterial color="#ffb020" transparent depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
+      </mesh>
+    </>
   );
 }
 
-/* ---------- City pins ---------- */
-function Pin({ lat, lon, major }: { lat: number; lon: number; major?: boolean }) {
+/* ------------------------------------------------------------------ */
+/* pins + labels                                                       */
+/* ------------------------------------------------------------------ */
+function Pin({ pos, hub }: { pos: THREE.Vector3; hub?: boolean }) {
   const ring = useRef<THREE.Mesh>(null);
-  const group = useRef<THREE.Group>(null);
-  const pos = useMemo(() => ll(lat, lon, 1.004), [lat, lon]);
-
-  useEffect(() => {
-    group.current?.lookAt(pos.clone().multiplyScalar(2));
+  const quat = useMemo(() => {
+    const q = new THREE.Quaternion();
+    q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), pos.clone().normalize());
+    return q;
   }, [pos]);
 
   useFrame(({ clock }) => {
     if (!ring.current) return;
-    const t = (clock.elapsedTime * 0.6 + lon * 0.01) % 1;
-    ring.current.scale.setScalar(1 + t * (major ? 3.2 : 2.2));
-    (ring.current.material as THREE.MeshBasicMaterial).opacity = (1 - t) * 0.8;
+    const t = (clock.elapsedTime * 0.45 + pos.x) % 1;
+    ring.current.scale.setScalar(1 + t * 1.8);
+    (ring.current.material as THREE.MeshBasicMaterial).opacity = (1 - t) * 0.6;
   });
 
+  const color = hub ? "#ffb020" : "#ee4b2b";
   return (
-    <group ref={group} position={pos}>
+    <group position={pos.clone().multiplyScalar(1.004)} quaternion={quat}>
       <mesh>
-        <sphereGeometry args={[major ? 0.016 : 0.011, 16, 16]} />
-        <meshBasicMaterial color={major ? "#ffb020" : "#ff6a3d"} toneMapped={false} />
+        <circleGeometry args={[hub ? 0.014 : 0.009, 24]} />
+        <meshBasicMaterial color={color} toneMapped={false} />
       </mesh>
-      <mesh ref={ring}>
-        <ringGeometry args={[0.014, 0.019, 32]} />
-        <meshBasicMaterial color={major ? "#ffb020" : "#ff6a3d"} transparent depthWrite={false} side={THREE.DoubleSide} />
-      </mesh>
+      {hub && (
+        <mesh ref={ring}>
+          <ringGeometry args={[0.018, 0.021, 40]} />
+          <meshBasicMaterial color={color} transparent depthWrite={false} side={THREE.DoubleSide} />
+        </mesh>
+      )}
     </group>
   );
 }
 
-/* ---------- Stars ---------- */
-function Stars() {
-  const pos = useMemo(() => {
-    const n = 700;
-    const a = new Float32Array(n * 3);
-    // deterministic PRNG (mulberry32) so render stays pure
-    let seed = 0x9e3779b9;
-    const rnd = () => {
-      seed = (seed + 0x6d2b79f5) | 0;
-      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-    for (let i = 0; i < n; i++) {
-      const u = rnd() * 2 - 1;
-      const th = rnd() * Math.PI * 2;
-      const r = 6 + rnd() * 5;
-      const sq = Math.sqrt(1 - u * u);
-      a.set([r * sq * Math.cos(th), r * u, r * sq * Math.sin(th)], i * 3);
-    }
-    return a;
-  }, []);
+/**
+ * Projects label anchors to screen space every frame and moves plain DOM
+ * labels (rendered by GlobeBackdrop) — no extra React roots per label.
+ */
+function LabelProjector({ anchors }: { anchors: { key: string; pos: THREE.Vector3; offset: [number, number] }[] }) {
+  const refs = useRef<(THREE.Object3D | null)[]>([]);
+  const els = useRef<(HTMLElement | null)[]>([]);
+  const v = useMemo(() => ({ w: new THREE.Vector3(), c: new THREE.Vector3(), n: new THREE.Vector3(), e: new THREE.Vector3() }), []);
+
+  useFrame(({ camera, size }) => {
+    anchors.forEach((a, i) => {
+      const o = refs.current[i];
+      if (!o || !o.parent) return;
+      let el = els.current[i];
+      if (!el) {
+        el = document.querySelector<HTMLElement>(`[data-globe-label="${a.key}"]`);
+        els.current[i] = el;
+        if (!el) return;
+      }
+      o.getWorldPosition(v.w);
+      o.parent.getWorldPosition(v.c);
+      v.n.copy(v.w).sub(v.c).normalize();
+      v.e.copy(camera.position).sub(v.w).normalize();
+      const facing = v.n.dot(v.e);
+      const p = v.w.clone().project(camera);
+      const x = (p.x * 0.5 + 0.5) * size.width + a.offset[0];
+      const y = (-p.y * 0.5 + 0.5) * size.height + a.offset[1];
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      el.style.opacity = String(THREE.MathUtils.clamp((facing - 0.2) * 3, 0, 1));
+    });
+  });
+
   return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[pos, 3]} />
-      </bufferGeometry>
-      <pointsMaterial size={0.018} color="#f5efe2" transparent opacity={0.55} sizeAttenuation depthWrite={false} />
-    </points>
+    <>
+      {anchors.map((a, i) => (
+        <object3D key={a.key} position={a.pos} ref={(el) => void (refs.current[i] = el)} />
+      ))}
+    </>
   );
 }
 
-/* ---------- Rig: follows globeState ---------- */
+/* ------------------------------------------------------------------ */
+/* rig                                                                 */
+/* ------------------------------------------------------------------ */
 function Rig({ reduced }: { reduced: boolean }) {
-  const globeOuter = useRef<THREE.Group>(null);
-  const globeInner = useRef<THREE.Group>(null);
-  const islandWrap = useRef<THREE.Group>(null);
-  const islandSpin = useRef<THREE.Group>(null);
-  const stars = useRef<THREE.Group>(null);
-  const skyProps = useRef<THREE.Group>(null);
-  const mix = useRef(0);
+  const outer = useRef<THREE.Group>(null);
+  const inner = useRef<THREE.Group>(null);
   const { size, invalidate } = useThree();
 
   useEffect(() => {
@@ -256,90 +349,62 @@ function Rig({ reduced }: { reduced: boolean }) {
     };
   }, [invalidate]);
 
-  const cities = useMemo(() => Object.fromEntries(CITIES.map((c) => [c.id, ll(c.lat, c.lon, 1.004)])), []);
+  const places = useMemo(() => Object.fromEntries(PLACES.map((p) => [p.id, ll(p.lat, p.lon, 1.004)])), []);
+  const anchors = useMemo(
+    () => [
+      ...PLACES.filter((p) => p.label).map((p) => ({ key: p.label!, pos: ll(p.lat, p.lon, 1.01), offset: [10, -26] as [number, number] })),
+      ...REGION_LABELS.map((r) => ({ key: r.key, pos: ll(r.lat, r.lon, 1.01), offset: [-40, -10] as [number, number] })),
+    ],
+    [],
+  );
 
   useFrame((state, dt) => {
     if (!globeState.active) return;
     const k = 1 - Math.pow(0.001, dt);
     const desktop = size.width >= 900;
-    const t = state.clock.elapsedTime;
     const p = globeState.pointer;
 
-    mix.current = THREE.MathUtils.lerp(mix.current, globeState.mode, k * 0.9);
-    const m = mix.current;
-
-    /* ----- island (hero) ----- */
-    const iw = islandWrap.current;
-    const isp = islandSpin.current;
-    if (iw && isp) {
-      iw.visible = m < 0.5;
-      const base = desktop ? 0.66 : 0.37;
-      iw.scale.setScalar(THREE.MathUtils.lerp(iw.scale.x, base * (1 - m) * (1 - globeState.heroScroll * 0.25), k * 0.6));
-      const tx = desktop ? 1.95 : 0;
-      const ty = (desktop ? -0.15 : -1.45) + globeState.heroScroll * 1.1 + Math.sin(t * 0.9) * 0.07;
-      iw.position.x = THREE.MathUtils.lerp(iw.position.x, tx - p.x * 0.18, k * 0.5);
-      iw.position.y = THREE.MathUtils.lerp(iw.position.y, ty - p.y * 0.1, k * 0.5);
-      const auto = reduced ? 0.6 : t * 0.1;
-      isp.rotation.y = THREE.MathUtils.lerp(isp.rotation.y, auto + p.x * 0.55 + globeState.heroScroll * 1.8, k * 0.35);
-      isp.rotation.x = THREE.MathUtils.lerp(isp.rotation.x, 0.42 - p.y * 0.16 + globeState.heroScroll * 0.2, k * 0.35);
+    // drag inertia + slow idle drift
+    if (!globeState.dragging) {
+      globeState.spinVel *= Math.pow(0.04, dt);
+      globeState.spin += globeState.spinVel;
+      if (!reduced) globeState.spin += dt * 2.2; // deg/s idle drift
     }
 
-    /* ----- globe (roadmap) ----- */
-    const go = globeOuter.current;
-    const gi = globeInner.current;
-    if (go && gi) {
-      go.visible = m > 0.02;
-      const sway = reduced ? 0 : Math.sin(t * 0.15) * 4;
-      gi.rotation.y = THREE.MathUtils.lerp(gi.rotation.y, -(globeState.lon + sway) * deg + p.x * 0.12, k * 0.6);
-      go.rotation.x = THREE.MathUtils.lerp(go.rotation.x, globeState.lat * deg - p.y * 0.08, k * 0.6);
-      const s = THREE.MathUtils.lerp(go.scale.x, globeState.zoom * (desktop ? 1.15 : 1.0) * m, k * 0.6);
-      go.scale.setScalar(Math.max(s, 0.0001));
-      go.position.x = THREE.MathUtils.lerp(go.position.x, desktop ? 1.9 : 0, k * 0.6);
-      go.position.y = THREE.MathUtils.lerp(go.position.y, desktop ? 0 : -1.1, k * 0.6);
+    const o = outer.current;
+    const i = inner.current;
+    if (o && i) {
+      i.rotation.y = THREE.MathUtils.lerp(i.rotation.y, -(globeState.lon + globeState.spin) * deg, globeState.dragging ? 0.5 : k * 0.5);
+      o.rotation.x = THREE.MathUtils.lerp(o.rotation.x, globeState.lat * deg - p.y * 0.06, k * 0.5);
+      o.rotation.z = THREE.MathUtils.lerp(o.rotation.z, -p.x * 0.04, k * 0.5);
+      const s = globeState.zoom * (desktop ? 1.0 : 0.95);
+      o.scale.setScalar(THREE.MathUtils.lerp(o.scale.x, s, k * 0.5));
+      o.position.x = THREE.MathUtils.lerp(o.position.x, desktop ? 1.3 : 0, k * 0.5);
+      o.position.y = THREE.MathUtils.lerp(o.position.y, desktop ? -0.02 : -1.45, k * 0.5);
     }
-    if (stars.current) stars.current.visible = m > 0.5;
-    if (skyProps.current) skyProps.current.visible = m < 0.5;
-
-    /* camera parallax */
     const cam = state.camera;
-    cam.position.x = THREE.MathUtils.lerp(cam.position.x, p.x * 0.35, k * 0.4);
-    cam.position.y = THREE.MathUtils.lerp(cam.position.y, 0.9 + p.y * 0.25, k * 0.4);
-    cam.lookAt(0, 0.2, 0);
-    state.invalidate(); // keep looping while active
+    cam.position.x = THREE.MathUtils.lerp(cam.position.x, p.x * 0.18, k * 0.3);
+    cam.position.y = THREE.MathUtils.lerp(cam.position.y, p.y * 0.12, k * 0.3);
+    cam.lookAt(0, 0, 0);
+    state.invalidate();
   });
 
   return (
-    <>
-      {/* ---------- hero: farm island ---------- */}
-      <group ref={islandWrap}>
-        <group ref={islandSpin}>
-          <Island />
-        </group>
+    <group ref={outer}>
+      <Halo />
+      <group ref={inner} rotation={[0, -112 * deg, 0]}>
+        <Ocean />
+        <Graticule />
+        <LandDots />
+        {PLACES.map((pl) => (
+          <Pin key={pl.id} pos={ll(pl.lat, pl.lon)} hub={pl.hub} />
+        ))}
+        <LabelProjector anchors={anchors} />
+        {ARCS.map(([a, b], n) => (
+          <Arc key={a + b} from={places[a]} to={places[b]} offset={n * (PERIOD / ARCS.length) * 1.7} />
+        ))}
       </group>
-      <group ref={skyProps}>
-        <Sun />
-        <Clouds />
-      </group>
-      <Petals />
-
-      {/* ---------- roadmap: globe ---------- */}
-      <group ref={stars}>
-        <Stars />
-      </group>
-      <group ref={globeOuter}>
-        <group ref={globeInner} rotation={[0, -125 * deg, 0]}>
-          <Core />
-          <LandDots />
-          <Atmosphere />
-          {CITIES.map((c) => (
-            <Pin key={c.id} lat={c.lat} lon={c.lon} major={c.major} />
-          ))}
-          {ARCS.map(([a, b], i) => (
-            <Arc key={a + b} index={i} from={cities[a]} to={cities[b]} />
-          ))}
-        </group>
-      </group>
-    </>
+    </group>
   );
 }
 
@@ -357,17 +422,15 @@ export default function GlobeScene() {
     <Canvas
       frameloop="demand"
       dpr={[1, lowPower ? 1.5 : 2]}
-      camera={{ fov: 32, position: [0, 0.9, 8] }}
-      gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
+      camera={{ fov: 35, position: [0, 0, 5.2] }}
+      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <hemisphereLight args={["#ffe3c4", "#7aa84a", 1.15]} />
-      <directionalLight position={[4, 6, 5]} intensity={2.3} color="#fff0d6" />
-      <directionalLight position={[-5, 2, -3]} intensity={0.7} color="#ffb08a" />
+      <Starfield />
       <Rig reduced={reduced} />
       {!lowPower && (
         <EffectComposer multisampling={0}>
-          <Bloom intensity={0.45} luminanceThreshold={0.92} luminanceSmoothing={0.3} mipmapBlur />
+          <Bloom intensity={0.35} luminanceThreshold={0.8} luminanceSmoothing={0.15} radius={0.45} mipmapBlur />
         </EffectComposer>
       )}
     </Canvas>

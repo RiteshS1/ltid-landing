@@ -28,8 +28,8 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 text-sumi transition-all duration-500 ${
-        solid ? "border-b-2 border-sumi bg-paper/92 backdrop-blur-md" : "border-b-2 border-transparent"
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,color] duration-500 ${
+        solid ? "border-b-2 border-sumi bg-paper/92 text-sumi backdrop-blur-md" : "border-b-2 border-transparent text-paper"
       }`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-8">
@@ -45,7 +45,7 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <LocaleSwitcher />
+          <LocaleSwitcher dark={!solid} />
           <a
             href="#contact"
             className="hidden rounded-full bg-shu px-4 py-2 text-sm font-bold text-paper transition-transform hover:scale-[1.05] sm:block"

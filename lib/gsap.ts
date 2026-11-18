@@ -15,8 +15,5 @@ export function registerGsap() {
 }
 
 registerGsap();
-if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
-  (window as unknown as Record<string, unknown>).__gsap = { gsap, ScrollTrigger };
-}
 
 export { gsap, ScrollTrigger, SplitText, useGSAP };

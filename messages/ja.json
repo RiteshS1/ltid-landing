@@ -28,7 +28,6 @@
       "特許出願中"
     ],
     "mapLabel": "Tokyo → Benguet → Asia → Africa",
-    "hint": "カーソルを動かしてみてください",
     "marquee": "金融 × 流通 × AI　・　デジタル農協　・　東京 → ベンゲット → アジア → アフリカ　・　"
   },
   "Problem": {
@@ -275,5 +274,13 @@
     "sources": "情報源：ltid.jp／FUNDINNO 案件ページ（2022年）／同社紹介動画",
     "rights": "コンセプト制作",
     "credit": "Made with ramen"
+  },
+  "Globe": {
+    "tokyo": "東京 · 本社",
+    "benguet": "ベンゲット · 稼働中",
+    "sea": "東南アジア",
+    "india": "インド",
+    "mozambique": "モザンビーク",
+    "drag": "ドラッグで回転"
   }
 }

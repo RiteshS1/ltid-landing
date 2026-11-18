@@ -8,7 +8,7 @@ import { routing } from "@/i18n/routing";
 const LABEL: Record<string, string> = { ja: "日本語", en: "EN" };
 
 /** Switches language without changing the URL (locale is stored in a cookie). */
-export default function LocaleSwitcher() {
+export default function LocaleSwitcher({ dark = false }: { dark?: boolean }) {
   const t = useTranslations("Nav");
   const locale = useLocale();
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function LocaleSwitcher() {
   const [pending, start] = useTransition();
 
   return (
-    <div role="group" aria-label={t("language")} className="flex items-center rounded-full border-2 border-sumi p-0.5 text-xs">
+    <div role="group" aria-label={t("language")} className="flex items-center rounded-full border-2 border-current p-0.5 text-xs">
       {routing.locales.map((l) => (
         <button
           key={l}
@@ -26,7 +26,7 @@ export default function LocaleSwitcher() {
           disabled={pending}
           onClick={() => start(() => router.replace(pathname, { locale: l, scroll: false }))}
           className={`rounded-full px-3 py-1.5 font-semibold transition-colors ${
-            l === locale ? "bg-sumi text-paper" : "text-sumi hover:bg-sumi/10"
+            l === locale ? (dark ? "bg-paper text-sumi" : "bg-sumi text-paper") : "hover:bg-current/10"
           }`}
         >
           {LABEL[l]}

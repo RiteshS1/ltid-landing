@@ -28,7 +28,6 @@
       "Patents pending"
     ],
     "mapLabel": "Tokyo → Benguet → Asia → Africa",
-    "hint": "Move your cursor",
     "marquee": "FINANCE × DISTRIBUTION × AI  ·  DIGITAL COOPERATIVE  ·  TOKYO → BENGUET → ASIA → AFRICA  ·  "
   },
   "Problem": {
@@ -275,5 +274,13 @@
     "sources": "Sources: ltid.jp / FUNDINNO project page (2022) / company introduction video",
     "rights": "Concept by",
     "credit": "Made with ramen"
+  },
+  "Globe": {
+    "tokyo": "Tokyo · HQ",
+    "benguet": "Benguet · Live",
+    "sea": "Southeast Asia",
+    "india": "India",
+    "mozambique": "Mozambique",
+    "drag": "Drag to rotate"
   }
 }

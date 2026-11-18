@@ -3,27 +3,27 @@
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { globeState } from "@/lib/globeState";
 
-const VIEWS = [
-  { lon: 121, lat: 17, zoom: 1.28, reveal: [1, 0, 0, 0] },
-  { lon: 112, lat: 4, zoom: 1.02, reveal: [1, 1, 0, 0] },
-  { lon: 72, lat: 2, zoom: 0.78, reveal: [1, 1, 1, 1] },
+const HERO = { lon: 112, lat: 16, zoom: 1 };
+const STEPS = [
+  { lon: 124, lat: 20, zoom: 1.35 }, // Philippines
+  { lon: 108, lat: 8, zoom: 1.12 }, // Southeast Asia
+  { lon: 78, lat: 2, zoom: 0.95 }, // India → Africa
 ];
 
-/** Connects page scroll position to the persistent 3D stage. No pinning: scroll is never held. */
+const go = (v: { lon: number; lat: number; zoom: number }) =>
+  gsap.to(globeState, { ...v, duration: 1.8, ease: "power3.inOut", overwrite: "auto" });
+
+/** Links page scroll to the persistent globe. Nothing is pinned. */
 export default function GlobeDirector() {
   useGSAP(() => {
     const seen = { hero: true, roadmap: false };
-
     const apply = () => {
       const on = seen.hero || seen.roadmap;
       if (on !== globeState.active) {
         globeState.active = on;
         if (on) globeState.invalidate?.();
       }
-      globeState.mode = seen.roadmap ? 1 : 0;
       gsap.set("#globe-backdrop", { autoAlpha: on ? 1 : 0 });
-      gsap.set("#bg-sky", { opacity: seen.roadmap ? 0 : 1 });
-      gsap.set("#bg-night", { opacity: seen.roadmap ? 1 : 0 });
     };
 
     ScrollTrigger.create({
@@ -35,9 +35,13 @@ export default function GlobeDirector() {
         seen.hero = self.isActive;
         apply();
       },
-      onUpdate: (self) => {
-        globeState.heroScroll = self.progress;
-      },
+      onEnterBack: () => go(HERO),
+    });
+    // gentle zoom as the hero scrolls away
+    gsap.to(globeState, {
+      zoom: 1.12,
+      ease: "none",
+      scrollTrigger: { trigger: "#top", start: "top top", end: "bottom top", scrub: true, refreshPriority: -1 },
     });
     ScrollTrigger.create({
       trigger: "#roadmap",
@@ -49,19 +53,16 @@ export default function GlobeDirector() {
         apply();
       },
     });
-
-    // draw the first arc a moment after the globe first shows
-    gsap.to(globeState.reveal, { 0: 1, duration: 2.4, ease: "power2.inOut", paused: false, scrollTrigger: { trigger: "#roadmap", start: "top 85%", once: true, refreshPriority: -1 } });
-
     document.querySelectorAll<HTMLElement>("[data-roadmap-step]").forEach((el, i) => {
-      const v = VIEWS[i];
-      const go = () => {
-        gsap.to(globeState, { lon: v.lon, lat: v.lat, zoom: v.zoom, duration: 1.8, ease: "power3.inOut", overwrite: "auto" });
-        v.reveal.forEach((r, k) => {
-          gsap.to(globeState.reveal, { [k]: r, duration: 2, ease: "power2.inOut", overwrite: "auto" });
-        });
-      };
-      ScrollTrigger.create({ trigger: el, start: "top 60%", end: "bottom 40%", refreshPriority: -1, onEnter: go, onEnterBack: go });
+      const v = STEPS[i];
+      ScrollTrigger.create({
+        trigger: el,
+        start: "top 60%",
+        end: "bottom 40%",
+        refreshPriority: -1,
+        onEnter: () => go(v),
+        onEnterBack: () => go(v),
+      });
     });
   }, []);
 
